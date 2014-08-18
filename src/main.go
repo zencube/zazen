@@ -53,10 +53,11 @@ func makeHandlers(redisAddr string, redisDb int, ttl string) [2]handler {
 	handlers[1] = func(w http.ResponseWriter, r *http.Request) {
 		var yourIP string
 		yourIP = iputils.GetRemoteIpFromRequest(r)
-		addr, err := client.Cmd("get", yourIP).Str()
+		localIp, err := client.Cmd("get", yourIP).Str()
 		if err != nil {
 		} else {
-			fmt.Fprintf(w, "%s", addr)
+			redirectUrl := fmt.Sprintf("http://%s", localIp)
+			http.Redirect(w, r, redirectUrl, 301)
 		}
 	}
 
@@ -71,7 +72,7 @@ func main() {
 
 	handlers := makeHandlers("127.0.01:6379", *db, *ttl)
 	http.HandleFunc("/announce", handlers[0])
-	http.HandleFunc("/get", handlers[1])
+	http.HandleFunc("/", handlers[1])
 
 	log.Printf("Starting server on address %s", *addr)
 	err := http.ListenAndServe(*addr, nil)
