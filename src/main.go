@@ -67,10 +67,11 @@ func makeHandlers(redisAddr string, redisDb int, ttl string) [2]handler {
 func main() {
 	addr := flag.String("addr", ":8080", "The address on which to listen")
 	db := flag.Int("db", 0, "The redis database to use (default is 0)")
+	redisAddr := flag.String("redisaddr", "127.0.0.1:6379", "The address of the redis server to use for caching (default is 127.0.0.1:6379)")
 	ttl := flag.String("ttl", "3600", "The expiry time for stored keys in seconds (default is 3600)")
 	flag.Parse()
 
-	handlers := makeHandlers("127.0.01:6379", *db, *ttl)
+	handlers := makeHandlers(*redisAddr, *db, *ttl)
 	http.HandleFunc("/announce", handlers[0])
 	http.HandleFunc("/", handlers[1])
 
